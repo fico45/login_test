@@ -53,7 +53,7 @@ class User {
 
   User.fromJson(Map<String, dynamic> json) {
     id = json['id'];
-    userRole = UserRole.fromJson(json['userRole']);
+    //userRole = UserRole.fromJson(json['userRole']);
     email = json['email'];
     firstName = json['firstName'];
     lastName = json['lastName'];

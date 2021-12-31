@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:glassmorphism_widgets/glassmorphism_widgets.dart';
 import 'package:login_test/model/user.dart';
 import 'package:login_test/screens/welcome_screen.dart';
@@ -18,32 +19,76 @@ class AuthScreen extends StatefulWidget {
 }
 
 class _AuthScreenState extends State<AuthScreen> {
-  late AutoGenerate _user;
+  final storage = const FlutterSecureStorage();
+  late AutoGenerate _response;
+  late User _onlyUser;
   var _isLoading = false;
   var _isLoggedIn = false;
   Color _particleColor = Colors.blue;
+
+  @override
+  void initState() {
+    _checkIfLoggedIn();
+    super.initState();
+  }
+
+  Future<void> _checkIfLoggedIn() async {
+    String? _token;
+    await storage.read(key: "token").then((value) {
+      _token = value;
+    });
+
+    if (_token != null) {
+      String bearerUrl = 'https://api.getcountapp.com/api/v1/users/me';
+      http.Response bearerResponse = await http.get(
+        Uri.parse(bearerUrl),
+        headers: <String, String>{
+          'Content-type': 'application/json; charset=UTF-8',
+          'Authorization': 'Bearer $_token',
+        },
+      );
+
+      if (bearerResponse.statusCode == 200) {
+        _particleColor = Colors.green;
+        _onlyUser = User.fromJson((json.decode(bearerResponse.body)));
+        setState(() {
+          _isLoggedIn = true;
+        });
+      } else if (bearerResponse.statusCode == 400) {}
+    } else {
+      return;
+    }
+  }
 
   void _submitAuthForm(
     String username,
     String password,
     BuildContext ctx,
   ) async {
-    setState(() {
-      _isLoading = true;
-    });
+    setState(
+      () {
+        _isLoading = true;
+      },
+    );
     String url = "https://api.getcountapp.com/api/v1/authenticate";
-    http.Response response = await http.post(Uri.parse(url),
-        headers: <String, String>{
-          'Content-type': 'application/json; charset=UTF-8',
-        },
-        body: jsonEncode(<String, String>{
+    http.Response response = await http.post(
+      Uri.parse(url),
+      headers: <String, String>{
+        'Content-type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(
+        <String, String>{
           'username': username,
           'password': password,
-        }));
+        },
+      ),
+    );
 
     if (response.statusCode == 200) {
       _particleColor = Colors.green;
-      _user = AutoGenerate.fromJson((json.decode(response.body)));
+      _response = AutoGenerate.fromJson((json.decode(response.body)));
+      storage.write(key: "token", value: _response.token);
+      _onlyUser = _response.user;
       setState(() {
         _isLoading = false;
         _isLoggedIn = true;
@@ -78,6 +123,7 @@ class _AuthScreenState extends State<AuthScreen> {
                   onPressed: () {
                     setState(() {
                       _isLoggedIn = !_isLoggedIn;
+                      storage.deleteAll();
                     });
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
@@ -89,7 +135,7 @@ class _AuthScreenState extends State<AuthScreen> {
                   })
               : null,
           body: _isLoggedIn
-              ? WelcomeScreen(user: _user)
+              ? WelcomeScreen(user: _onlyUser)
               : Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [

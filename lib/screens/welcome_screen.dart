@@ -3,7 +3,7 @@ import 'package:login_test/model/user.dart';
 
 class WelcomeScreen extends StatefulWidget {
   const WelcomeScreen({required this.user, Key? key}) : super(key: key);
-  final AutoGenerate user;
+  final User user;
   @override
   _WelcomeScreenState createState() => _WelcomeScreenState();
 }
@@ -33,9 +33,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                     style: TextStyle(fontSize: 20),
                   ),
                   Text(
-                    widget.user.user.firstName +
-                        ' ' +
-                        widget.user.user.lastName,
+                    widget.user.firstName + ' ' + widget.user.lastName,
                     style: const TextStyle(fontSize: 40),
                   ),
                 ],
@@ -57,7 +55,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                   ),
                   Image.asset(
                       "icons/flags/png/" +
-                          widget.user.user.country.toLowerCase() +
+                          widget.user.country.toLowerCase() +
                           ".png",
                       package: 'country_icons'),
                 ],
@@ -72,25 +70,11 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
               child: Row(
                 children: [
                   const Text(
-                    'Administrator? ',
-                    style: TextStyle(fontSize: 18),
-                  ),
-                  Icon(widget.user.user.userRole.isAdministrator
-                      ? Icons.check
-                      : Icons.clear),
-                ],
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(10),
-              child: Row(
-                children: [
-                  const Text(
                     'Email: ',
                     style: TextStyle(fontSize: 18),
                   ),
                   Text(
-                    widget.user.user.email,
+                    widget.user.email,
                     style: const TextStyle(fontSize: 18),
                   ),
                 ],
@@ -105,7 +89,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                     style: TextStyle(fontSize: 18),
                   ),
                   Text(
-                    widget.user.user.language,
+                    widget.user.language,
                     style: const TextStyle(fontSize: 18),
                   ),
                 ],
