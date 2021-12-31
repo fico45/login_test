@@ -39,6 +39,9 @@ class _AuthScreenState extends State<AuthScreen> {
     });
 
     if (_token != null) {
+      setState(() {
+        _isLoading = true;
+      });
       String bearerUrl = 'https://api.getcountapp.com/api/v1/users/me';
       http.Response bearerResponse = await http.get(
         Uri.parse(bearerUrl),
@@ -53,9 +56,17 @@ class _AuthScreenState extends State<AuthScreen> {
         _onlyUser = User.fromJson((json.decode(bearerResponse.body)));
         setState(() {
           _isLoggedIn = true;
+          _isLoading = false;
         });
-      } else if (bearerResponse.statusCode == 400) {}
+      } else if (bearerResponse.statusCode == 400) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     } else {
+      setState(() {
+        _isLoading = false;
+      });
       return;
     }
   }
